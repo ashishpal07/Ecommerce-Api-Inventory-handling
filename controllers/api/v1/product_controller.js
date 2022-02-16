@@ -87,42 +87,8 @@ module.exports.deleteProduct = async function(req, res){
 
 }
 
-// update quantity increse
-module.exports.updateProductIncrease = async function(req, res){
-
-    try{
-
-        let id = req.params.id;
-        let num = parseInt(req.params.num);
-
-        let product = await Product.findById(id);
-
-        if(product){
-            product.quantity += num;
-            product.save();
-            return res.status(200).json({
-                product,
-                data : {
-                    message : "Product updated successfully"
-                }
-            });
-        }else{
-            return res.status(400).json({
-                data : {
-                    message : "Product not found"
-                }
-            });
-        }
-
-    }catch(err){
-        console.log("error while updating product increase quantity");
-        return;
-    }
-
-}
-
-// update quantity increse
-module.exports.updateProductDecrease = async function(req, res){
+// update quantity increse/ decrease
+module.exports.updateProductIncOrDec = async function(req, res){
 
     try{
 
@@ -133,22 +99,25 @@ module.exports.updateProductDecrease = async function(req, res){
 
         if(product){
             let q = product.quantity;
-            if(q < num){
+            let result = q + num;
+            
+            if(result < 0){
                 return res.json({
                     data : {
                         message : "You can not decrease quantity because you have less quantity"
                     }
                 });
+            }else if(result >= 0){
+                product.quantity += num;
+                await product.save();
+                return res.status(200).json({
+                    product,
+                    data : {
+                        message : "Product updated successfully"
+                    }
+                });
             }
-
-            product.quantity -= num;
-            product.save();
-            return res.status(200).json({
-                product,
-                data : {
-                    message : "Product updated successfully"
-                }
-            });
+            
         }else{
             return res.status(400).json({
                 data : {
@@ -158,8 +127,9 @@ module.exports.updateProductDecrease = async function(req, res){
         }
 
     }catch(err){
-        console.log("error while updating product increase quantity");
+        console.log("error while updating product quantity", err);
         return;
     }
 
 }
+
